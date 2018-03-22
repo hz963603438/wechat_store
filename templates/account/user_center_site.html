@@ -1,0 +1,84 @@
+{% extends 'user_base.html' %} {% block user_content %}
+    {% block css %}
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css">
+    {% endblock css %}
+    {% block js %}
+        <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/jquery.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+    {% endblock js %}
+    <div class="right_content clearfix">
+        <div>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">
+                            {{ message|safe }}
+                            <a href="#" class="close"> </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <h3 class="common_title2">默认收货地址</h3>
+        <div class="site_con">
+            <dl>
+                <dt>当前地址:</dt>
+                {% if request.user.receiver_id %}
+                <dd id="moren">{{ request.user.receiver_name }}&nbsp;&nbsp;
+                    &nbsp;&nbsp;{{ request.user.address }}&nbsp;&nbsp;
+                    （{{ request.user.receiver_name }} 收）&nbsp;&nbsp; {{ request.user.telephone_number }}</dd>
+                {% else %}
+                <dd id="moren"></dd>
+                {% endif %}
+            </dl>
+            {% for info in receiver_infos %}
+                <div class="panel panel-default block_{{info.id}}">
+                    <div class="panel-heading">
+                        <p><span style="font-size: 18px" id="name{{ forloop.counter }}">{{ info.name }}</span>&nbsp;&nbsp;
+                            <span
+                                    style="margin-left: 30px"
+                                    id="telephone{{ forloop.counter }}">{{ info.telephone }}</span></p>
+                        <div id="address{{ forloop.counter }}">
+                            {{ info.address }}
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <input type="radio" name="address_check" class="pull-left" data_id="{{info.id}}">&nbsp;&nbsp;设置为默认地址
+                        <span class="pull-right"><a href="#"
+                                                    class="btn btn-danger" data_id="{{info.id}}">删除</a></span>
+                        <span class="pull-right"><a type="button" class="btn btn-primary pull-right" data-toggle="modal"
+                                                    data-target="#myModal_1" style="margin-right: 10px">编辑</a></span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% include 'account/receiver_address.html' %}
+        {% include 'account/edite_address.html' %}
+    </div>
+    <script>
+        $(function () {
+            var $radio = $(".site_con input[type='radio']");
+            $radio.click(function(){
+                var data_id = $(this).attr("data_id");
+                if($(this).is(":checked")){
+                    $.get("{% url 'user:user_center_set_default_site' %}?data_id=" + data_id, function(data){
+                        $("#moren").html(data.name + '&nbsp;&nbsp;&nbsp;&nbsp;' + data.address + '&nbsp;&nbsp;' + '（' + data.name + '收）&nbsp;&nbsp;' + data.telephone);
+                    });
+                }
+            });
+
+            $(".btn-danger").click(function(){
+                var data_id = $(this).attr("data_id");
+                if(confirm("是否确认删除?")){
+                    $.get("{% url 'user:user_center_del_default_site' %}?data_id=" + data_id, function(result){
+                        if(result.status==0){
+                            alert("删除成功");
+                            $(".block_" + data_id).remove();
+                        }
+                    });
+                }
+            });
+
+        })
+    </script>
+{% endblock user_content %}

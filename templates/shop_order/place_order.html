@@ -1,0 +1,117 @@
+{% extends 'user_base.html' %}
+{% block title %}
+    天天生鲜－订单中心
+{% endblock title %}
+{% block user_title %}
+    订单中心
+{% endblock user_title %}
+{% block user_center %}
+{% endblock user_center %}
+{% block user_content %}
+
+
+    <h3 class="common_title">确认收货地址</h3>
+
+    <div class="common_list_con clearfix">
+        <dl>
+            <dt>寄送到：</dt>
+            <dd><input type="radio" name="" checked="">{{ user.city }}&nbsp;&nbsp;&nbsp;{{ user.address }}&nbsp;&nbsp;&nbsp;({{ user.username }}收&nbsp;&nbsp;&nbsp;{{ user.telephone }})
+                <br> 北京市 海淀区 东北旺西路8号中关村软件园 （李思 收） 182****7528
+            </dd>
+        </dl>
+        <a href="" class="edit_site">编辑收货地址</a>
+
+    </div>
+
+    <h3 class="common_title">支付方式</h3>
+    <div class="common_list_con clearfix">
+        <div class="pay_style_con clearfix">
+            <input type="radio" name="pay_style" checked>
+            <label class="cash">货到付款</label>
+            <input type="radio" name="pay_style">
+            <label class="weixin">微信支付</label>
+            <input type="radio" name="pay_style">
+            <label class="zhifubao"></label>
+            <input type="radio" name="pay_style">
+            <label class="bank">银行卡支付</label>
+        </div>
+    </div>
+
+    <h3 class="common_title">商品列表</h3>
+
+    <div class="common_list_con clearfix">
+        <ul class="goods_list_th clearfix">
+            <li class="col01">商品名称</li>
+            <li class="col02">商品单位</li>
+            <li class="col03">商品价格</li>
+            <li class="col04">数量</li>
+            <li class="col05">小计</li>
+        </ul>
+        {% for item in orderDetails %}
+            <ul class="goods_list_td clearfix">
+                <li class="col01">{{ forloop.counter }}</li>
+                <li class="col02"><img src="{{ MEDIA_URL }}{{ item.goods_info.images }}"></li>
+                <li class="col03">{{ item.goods_info.name|truncatechars:10 }}</li>
+                <li class="col04">{{ item.goods_info.unit }}</li>
+                <li class="col05"><em>{{ item.goods_info.price }}</em>元</li>
+                <li class="col06">{{ item.count }}</li>
+                <li class="col07"><em>0</em>元</li>
+            </ul>
+        {% endfor %}
+    </div>
+
+    <h3 class="common_title">总金额结算</h3>
+    <form action="{% url 'shop_order:order' %}" method="post">
+    {% csrf_token %}
+        <div class="common_list_con clearfix">
+            <div class="settle_con">
+                <div class="total_goods_count">共<em>2</em>件商品，总金额<b>42.60</b>元</div>
+                <div class="transit">运费：<b>10</b>元</div>
+                <div class="total_pay">实付款：<b>0</b>元</div>
+                <input type="hidden" name="order_id" value="{{ order.id }}">
+            </div>
+        </div>
+        <div class="order_submit clearfix">
+            <input type="submit" value="提交订单">
+        </div>
+    </form>
+    <div class="popup_con">
+        <div class="popup">
+            <p>订单提交成功！</p>
+        </div>
+
+        <div class="mask"></div>
+    </div>
+    <script type="text/javascript">
+        $('#order_btn').click(function () {
+            localStorage.setItem('order_finish', 2);
+
+            $('.popup_con').fadeIn('fast', function () {
+
+                setTimeout(function () {
+                    $('.popup_con').fadeOut('fast', function () {
+{#                        window.location.href = 'index.html';#}
+                    });
+                }, 3000)
+
+            });
+        });
+    </script>
+    <script>
+        $(function () {
+            var $ul = $('.goods_list_td');
+            var total_price = 0;
+            $ul.each(function () {
+                var price = parseFloat($(this).find('.col05 em').text());
+                var buy_num = parseInt($(this).find('.col06').text());
+                min_price = parseFloat(new Number(price * buy_num).toFixed(2));
+                $(this).find('.col07 em').text(min_price);
+                total_price = total_price + min_price;
+            });
+            total_price = parseFloat(new Number(total_price).toFixed(2));
+            $('.common_list_con .settle_con .total_goods_count b').text(total_price);
+            var yun_fei = parseFloat($('.common_list_con .settle_con .transit b').text());
+            $('.common_list_con .settle_con .total_pay b').text(total_price + yun_fei);
+        });
+    </script>
+{% endblock user_content %}

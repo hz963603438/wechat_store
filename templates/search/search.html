@@ -1,0 +1,45 @@
+{% extends 'shop_base.html' %}
+{% load tags %}
+
+{% block shop_js %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/list.js"></script>
+{% endblock shop_js %}
+
+{% block index_content %}
+{{ block.super }}
+
+    <div class="breadcrumb">
+        <a href="{% url 'shop:index' %}">全部分类</a>
+        <span>></span>
+        <a href="#">{{ goods_category.name }}</a>
+    </div>
+
+    <div class="main_wrap clearfix">
+        <div class="l_wrap fl clearfix">
+            <div class="new_goods">
+                <h3>新品推荐</h3>
+                {% refferral_goods %}
+            </div>
+        </div>
+
+        <div class="r_wrap fr clearfix">
+
+            <ul class="goods_type_list clearfix">
+
+                {% for item in page.object_list %}
+                    <li>
+                        <a href=""><img src="{{ MEDIA_URL }}{{ item.object.images }}"></a>
+                        <h4><a href="">{{ item.object.name }}</a></h4>
+                        <div class="operate">
+                            <span class="prize">￥{{ item.object.price }}</span>
+                            <span class="unit">{{ item.object.price }}/{{ item.object.unit }}/点击:{{ item.object.click }}</span>
+                            <span id="add_url"></span>
+                            <a href="#" class="add_goods" title="加入购物车"></a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            123{% divide_page page.number paginator 'search:haystack_search' request.get_full_path page_name='page' %}
+        </div>
+    </div>
+{% endblock index_content %}

@@ -1,0 +1,80 @@
+{% extends 'shop_base.html' %}
+{% load staticfiles %}
+{% load tags %}
+
+
+{% block shop_js %}
+    <script type="text/javascript" src="{% static '/js/detail.js' %}"></script>
+{% endblock shop_js %}
+
+{% block index_content %} {{ block.super }}
+    <div class="breadcrumb">
+        <a href="{% url 'shop:index' %}">全部分类</a>
+        <span>></span>
+        <a href="">{{ goods_info.category }}</a>
+        <span>></span>
+        <a href="#">商品详情</a>
+    </div>
+
+    <div class="goods_detail_con clearfix">
+        <div class="goods_detail_pic fl"><img src="{{ MEDIA_URL }}{{ goods_info.images }}"></div>
+        <div class="goods_detail_list fr">
+            <h3 cl>{{ goods_info.name }}</h3>
+            <p>{{ goods_info.goods_desc }}</p>
+            <div class="prize_bar">
+                <span class="show_pirze">¥<em>{{ goods_info.price }}</em></span>
+                <span class="show_unit">单  位：{{ goods_info.unit }}</span>
+                <span id="goods_id">{{ goods_info.id }}</span>
+            </div>
+            <div class="goods_num clearfix">
+                <div class="num_name fl">数 量：</div>
+                <div class="num_add fl">
+                    <input type="text" class="num_show fl" value="1">
+                    <input type="hidden" name="hidden" id="add_cart_url"
+                           value="{% url 'shop_cart:add_cart' goods_info.id %}">
+                    <a href="javascript:;" class="add fr">+</a>
+                    <a href="javascript:;" class="minus fr">-</a>
+                </div>
+                <span class="show_kucun"
+                      style="margin-left: 20px;margin-top: 15px; display: inline-block">库 存：<em>{{ goods_info.stock }}</em></span>
+            </div>
+            <div class="total">总价：<em>{{ goods_info.price }}元</em></div>
+            <div class="operate_btn">
+                <a href="javascript:;" class="buy_btn">立即购买</a>
+                <a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main_wrap clearfix">
+        <div class="l_wrap fl clearfix">
+            <div class="new_goods">
+                <h3>新品推荐</h3>
+                {% refferral_goods goods_info.category.id %}
+            </div>
+        </div>
+
+        <div class="r_wrap fr clearfix">
+            <ul class="detail_tab clearfix">
+                <li class="active">商品介绍</li>
+                <li>评论</li>
+            </ul>
+
+            <div class="tab_content">
+                <dl>
+                    <dt>商品详情：</dt>
+                    <dd>
+                        {{ goods_info.detail|safe }}
+                    </dd>
+                </dl>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="add_jump"></div>
+
+    <script type="text/javascript">
+    </script>
+
+{% endblock index_content %}

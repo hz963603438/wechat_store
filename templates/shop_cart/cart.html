@@ -1,0 +1,271 @@
+{% extends 'user_base.html' %}
+{% block title %}
+    天天生鲜－购物车
+{% endblock title %}
+{% block user_title %}
+    购物车
+{% endblock user_title %}
+{% block user_center %}
+{% endblock user_center %}
+{% block user_content %}
+    <form action="{% url 'shop_order:show_order' %}" method="post">
+        {% csrf_token %}
+        <div class="total_count">全部商品<em>０</em>件</div>
+        <ul class="cart_list_th clearfix">
+            <li class="col01">商品名称</li>
+            <li class="col02">商品单位</li>
+            <li class="col03">商品价格</li>
+            <li class="col04">数量</li>
+            <li class="col05">小计</li>
+            <li class="col06">操作</li>
+        </ul>
+        {% for item in cart_info %}
+            <ul class="cart_list_td clearfix ul_{{ item.goods_info.id }}">
+                <li class="col01"><input type="checkbox" name="cart_by_goods_id" checked="checked"
+                                         value="{{ item.goods_info.id }}"></li>
+                <li class="col02"><img src="{{ MEDIA_URL }}{{ item.goods_info.images }}"></li>
+                <li class="col03 goods_name_{{ item.goods_info.id }}">{{ item.goods_info.name }}<br><em>{{ item.goods_info.price }}元/{{ item.goods_info.unit }}</em>
+                </li>
+                <li class="col04">{{ item.goods_info.unit }}</li>
+                <li class="col05"><em>{{ item.goods_info.price }}</em>元</li>
+                <li class="col06">
+                    <div class="num_add">
+                        <a href="javascript:;" class="add fl">+</a>
+                        <input type="text" class="num_show fl" value="{{ item.buy_num }}">
+                        <input type="hidden" value="{{ item.goods_info.stock }}">
+                        <input type="hidden" class="update_cart_url"
+                               value="{% url 'shop_cart:update_cart' item.goods_info.id %}">
+                        <a href="javascript:;" class="minus fl">-</a>
+                    </div>
+                </li>
+                <li class="col07"><em>0</em>元</li>
+                <li class="col08"><a class="del_cart" data_id="{{ item.goods_info.id }}" data_url="{% url 'shop_cart:del_cart' item.goods_info.id %}" href="javascript:;">删除</a>
+                    <input type="hidden" value="">
+                </li>
+            </ul>
+        {% endfor %}
+        <ul class="settlements">
+            <li class="col01"><input type="checkbox" name="" checked="checked"></li>
+            <li class="col02">全选</li>
+            <li class="col03">合计(不含运费)：<span>¥</span><em>０</em><br>共计<b class="total_num">０</b>件商品</li>
+            <li class="col04"><input type="submit" value="去结算"></li>
+        </ul>
+    </form>
+    <script>
+        function format_num(num) {
+            //格式化计算后的数据
+            return parseFloat(new Number(num).toFixed(2));  // 计算每个商品的总价钱
+        }
+        function save_total_price(total_price) {
+            //保存总的金额
+            totalprice = format_num(total_price);
+            $('.settlements .col03 em').text(totalprice);
+        }
+        function get_total_price() {
+            // 计算购车中总的商品的价格
+            var total_price = 0;  // 总价
+            var total_num = 0;  // 总数量
+            $('.cart_list_td').each(function (index) {
+                var $li = $('.cart_list_td').eq(index).children();
+                var checked = $li.eq(0).children().prop('checked');
+                var goods_price = parseFloat($li.eq(4).children().text());  //获取商品的单价
+                var goods_num = parseInt($li.eq(5).find('.num_show').val());  //获取商品的个数
+                var min_price = format_num(goods_num * goods_price);  // 计算每个商品的总价钱
+                $li.eq(6).children().text(min_price);
+                if (checked) {
+                    total_price = total_price + min_price;
+                }
+                total_num = index + 1;
+            });
+            save_total_price(total_price);
+            var total_buy_num = $("input[name='checkbox']:checked").length;
+            $('.settlements .col03 .total_num').text(total_buy_num); // 显示底部总的数量
+            $('.total_count em').text(total_num);  // 显示顶部总的数量
+        }
+        $(function () {
+            var $ul = $('.cart_list_td');
+            var $total_checked =  $('.settlements .col01');
+            get_total_price(); // 调用计算总商品价格的函数
+
+            // 设定全选按钮的按钮的功能
+           $total_checked.children().click(function () {
+                var statue = $(this).prop('checked');
+                $(':checkbox').prop('checked', statue);
+                get_total_price();
+            });
+            //判断每个复选框的状态
+            $(':checkbox').click(function () {
+                var checked_size = $("input[name='checkbox']:checked").length;
+                var total_checkbox_size = $("input[name='checkbox']").length;
+                if (checked_size !== total_checkbox_size) {
+                    $total_checked.prop('checked', false);
+                } else {
+                    $total_checked.prop('checked', true);
+                }
+                get_total_price();
+
+            });
+            //input 文本框失去焦点的时候
+            function input_bur(ths) {
+                var store = parseInt(ths.next().val());
+                var input_num = ths.val();
+                if (isNaN(input_num)) {
+                    alert('请输入一个整数');
+                    ths.val(1)
+                } else if (input_num > store) {
+                    alert('输入的最大数量超过了库存量');
+                    ths.val(store);
+                } else if (input_num < 1) {
+                    alert('一个你也不买。。。');
+                    ths.val(1);
+                }
+                var buy_num = ths.val();
+                var update_cart_url = ths.parent().find('.update_cart_url').val();
+                var data = {'buy_num': buy_num, "oper": "custom"};
+
+                $.get(update_cart_url, data, function (data) {
+                    if (data.code === 0) {
+                        ths.val(data.buy_num);
+                        get_total_price();
+                    }
+                });
+            }
+
+            $ul.each(function (index) {
+                var $li = $ul.eq(index).children();
+                var $input_num = $li.eq(5).find('.num_show').blur(function () {
+                    input_bur($(this))
+                });
+
+                $li.eq(5).find('.add').click(function () {
+                    var input_num = parseInt($input_num.val());
+                    $input_num.val(input_num + 1);
+                    input_bur($input_num)
+                });
+                $li.eq(5).find('.minus').click(function () {
+                    var input_num = parseInt($input_num.val());
+                    $input_num.val(input_num - 1);
+                    input_bur($input_num);
+                });
+
+            });
+
+            var $del_cart = $(".del_cart");
+
+            $del_cart.click(function(){
+                var gid = $(this).attr("data_id");
+                var goods_name = $(".goods_name_" + gid);
+
+                if(confirm("请问是否删除" + goods_name)){
+                    $.get($del_cart.attr("data_url"), function(res){
+                        if(res.code === 0){
+                            $(".ul_" + gid).remove();
+                            get_total_price();
+                        }else{
+                            alert("删除失败");
+                        }
+                    })
+                }
+            });
+        });
+
+    </script>
+{% endblock user_content %}
+
+<script>
+    {#    $ul.each(function (index) {#}
+    {#        // 检测每个checkbox的值根据值来进行总金额的计算#}
+    {#        var $li = $ul.eq(index).children();#}
+    {#        $li.eq(0).children().click(function () {#}
+    {#            var mix_price = 0;#}
+    {#            if ($(this).prop('checked')) {  // 选中这个商品的话#}
+    {#                mix_price = parseFloat($li.eq(6).children().text()); // 获取到单件商品的小计价格#}
+    {#                total_price = total_price + mix_price; // 计算减去后的总价格#}
+    {#                total_num = total_num + 1;#}
+    {#            } else { // 如果没有选中这个商品的话#}
+    {#                mix_price = parseFloat($li.eq(6).children().text()); // 获取到单件商品的小计价格#}
+    {#                total_price = total_price - mix_price; // 计算减去后的总价格#}
+    {#                total_num = total_num - 1;#}
+    {#                $total_checked.prop('checked', "");#}
+    {#            }#}
+    {#            save_total_price(total_price);#}
+    {#            $bottom_total_num.text(total_num);#}
+    {#        });#}
+    {#    });#}
+    {#    //全选按钮判断#}
+    {#    $total_checked.click(function () {#}
+    {#        var $check_box = $('input:checkbox');#}
+    {#        total_price = 0;#}
+    {#        total_num = 0;#}
+    {#        if ($total_checked.prop('checked')) {#}
+    {#            $check_box.prop('checked', 'true'); // 选中的check——box 全部设定为checked#}
+    {#            get_total_price() // 调用计算总价格的函数#}
+    {#        } else {#}
+    {#            $check_box.prop('checked', ''); // 选中的check——box 全部设定为checked#}
+    {#            $total_price.text(0);#}
+    {#            $bottom_total_num.text(0);#}
+    {#        }#}
+    {#    });#}
+    {##}
+    {#    // 商品数量加件的操作#}
+    {#    $ul.each(function (index) {#}
+    {#        var $li = $ul.eq(index).children();#}
+    {#        $li.eq(5).find('.add').click(function () {#}
+    {#            // 这里还缺少一个库存的判断#}
+    {#            //点击添加一个商品的#}
+    {#            var current_num = parseInt($li.eq(5).find('.num_show').val());  //获取商品的个数#}
+    {#            $li.eq(5).find('.num_show').val(current_num + 1); //单件商品的总个数加1#}
+    {#            var mix_price = parseFloat($li.eq(6).children().text()); // 获取到单件商品的小计价格#}
+    {#            var price = parseFloat($li.eq(4).children().text());  //获取商品的单价#}
+    {#            mix_price = mix_price + price;#}
+    {#            mix_price = format_num(mix_price);#}
+    {#            $li.eq(6).children().text(mix_price); // 设定单件商品的小计价格#}
+    {#            total_price = total_price + price; // 计算加一个单件商品后的总价格#}
+    {#            save_total_price(total_price);#}
+    {#            var add_cart_url = $li.eq(5).find('.add_cart_url').val();#}
+    {#            send_ajax(add_cart_url, 1)#}
+    {#        });#}
+    {#        $li.eq(5).find('.minus').click(function () {#}
+    {#            // 点击减去商品的时候#}
+    {#            var current_num = parseInt($li.eq(5).find('.num_show').val());  //获取商品的个数#}
+    {#            if (current_num <= 1) {#}
+    {#                return#}
+    {#            }#}
+    {#            $li.eq(5).find('.num_show').val(current_num - 1); //单件商品的总个数减1#}
+    {#            var mix_price = parseFloat($li.eq(6).children().text()); // 获取到单件商品的小计价格#}
+    {#            var price = parseFloat($li.eq(4).children().text());  //获取商品的单价#}
+    {#            mix_price = mix_price - price;#}
+    {#            mix_price = format_num(mix_price);#}
+    {#            $li.eq(6).children().text(mix_price); //设定单件商品的小计价格#}
+    {#            total_price = total_price - price; // 计算减一个单件商品后的总价格#}
+    {#            save_total_price(total_price);#}
+    {#            var add_cart_url = $li.eq(5).find('.add_cart_url').val(); // 找到对应的url#}
+    {#            send_ajax(add_cart_url, -1)#}
+    {#        });#}
+    {#    });#}
+    {#    })#}
+    {#    ;#}
+</script>
+
+
+{#        function get_total_price() {#}
+{#            // 计算购车中总的商品的价格#}
+{#            var total_price = 0;  // 总价#}
+{#            var total_num = 0;  // 总数量#}
+{#            $ul.each(function (index) {#}
+{#                var $li = $ul.eq(index).children();#}
+{#                var checked = $li.eq(0).children().prop('checked');#}
+{#                var goods_price = parseFloat($li.eq(4).children().text());  //获取商品的单价#}
+{#                var goods_num = parseInt($li.eq(5).find('.num_show').val());  //获取商品的个数#}
+{#                var min_price = format_num(goods_num * goods_price);  // 计算每个商品的总价钱#}
+{#                $li.eq(6).children().text(min_price);#}
+{#                if (checked) {#}
+{#                    total_price = total_price + min_price;#}
+{#                }#}
+{#                total_num = index + 1;#}
+{#            });#}
+{#            save_total_price(total_price);#}
+{#            var total_buy_num = $("input[name='checkbox']:checked").length;#}
+{#            $bottom_total_num.text(total_buy_num); // 显示底部总的数量#}
+{#            $top_total_num.text(total_num);  // 显示顶部总的数量#}
+{#        }#}

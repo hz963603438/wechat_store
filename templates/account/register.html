@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}欢迎注册{% endblock title %}
+{% block js %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/register.js"></script>
+{% endblock js %}
+{% block header %}
+
+{% endblock header%}
+{% block content %}
+    <div class="register_con">
+        <div class="l_con fl">
+            <a class="reg_logo"><img src="{{ STATIC_URL }}images/logo02.png"></a>
+            <div class="reg_slogan">足不出户 · 新鲜每一天</div>
+            <div class="reg_banner"></div>
+        </div>
+
+        <div class="r_con fr">
+            <div class="reg_title clearfix">
+                <h1>用户注册</h1>
+                <a href="">登录</a>
+            </div>
+            <div class="reg_form clearfix">
+                <form action="{% url 'user:register' %}" method="post" id="reg_form">
+                    {% csrf_token %}
+                    <ul>
+                        <li>
+                            <label>用户名:</label>
+                            <input type="text" name="username" id="user_name" value="{{ register_form.username.value }}">
+                            <span class="error_tip" {% if register_form.errors.email %} style="display: block" {% endif %} >{{ register_form.errors.username.0 }}</span>
+                        </li>
+                        <li>
+                            <label>密码:</label>
+                            <input type="password" name="password1" id="pwd" value="{{ register_form.password1.value }}">
+                            <span class="error_tip" {% if register_form.errors.email %} style="display: block" {% endif %} >{{ register_form.errors.password1.0 }}</span>
+                        </li>
+                        <li>
+                            <label>确认密码:</label>
+                            <input type="password" name="password2" id="cpwd" value="{{ register_form.password2.value }}">
+                            <span class="error_tip" {% if register_form.errors.email %} style="display: block" {% endif %}>{{ register_form.errors.password2.0 }}</span>
+                        </li>
+                        <li>
+                            <label>邮箱:</label>
+                            <input type="text" name="email" id="email" value="{{ register_form.email.value }}">
+                            <span  class="error_tip" {% if register_form.errors.email %} style="display: block" {% endif %}>{{  register_form.errors.email.0 }}</span>
+                        </li>
+                        <li class="agreement">
+                            <input type="checkbox" name="allow" id="allow" checked="checked" value="1">
+                            <label>同意”天天生鲜用户使用协议“</label>
+                            <span class="error_tip2" {% if err_allow %} style="display: block" {% endif %}>{{ err_allow }}</span>
+                        </li>
+                        <li class="reg_sub">
+                            <input type="submit" value="注 册" name="">
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+{% endblock content %}

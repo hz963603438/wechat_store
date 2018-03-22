@@ -1,0 +1,55 @@
+{% extends 'shop_base.html' %}
+{% load staticfiles %}
+
+{% block index_content %}
+     <div class="center_con clearfix">
+        <ul class="subnav fl">
+            <li><a href="{% url 'shop:categorys' category_list.0.id %}" class="fruit">{{ category_list.0.name }}</a></li>
+            <li><a href="{% url 'shop:categorys' category_list.1.id %}" class="seafood">{{ category_list.1.name }}</a></li>
+            <li><a href="{% url 'shop:categorys' category_list.2.id %}" class="meet">{{ category_list.2.name }}</a></li>
+            <li><a href="{% url 'shop:categorys' category_list.3.id %}" class="egg">{{ category_list.3.name }}</a></li>
+            <li><a href="{% url 'shop:categorys' category_list.4.id %}" class="vegetables">{{ category_list.4.name }}</a></li>
+            <li><a href="{% url 'shop:categorys' category_list.5.id %}" class="ice">{{ category_list.5.name }}</a></li>
+        </ul>
+
+        <div class="slide fl">
+            <ul class="slide_pics">
+                <li><img src="{% static 'images/slide.jpg' %}" alt="幻灯片"></li>
+                <li><img src="{% static 'images/slide02.jpg' %}" alt="幻灯片"></li>
+                <li><img src="{% static 'images/slide03.jpg' %}" alt="幻灯片"></li>
+                <li><img src="{% static 'images/slide04.jpg' %}" alt="幻灯片"></li>
+            </ul>
+            <div class="prev"></div>
+            <div class="next"></div>
+            <ul class="points"></ul>
+        </div>
+        <div class="adv fl">
+            <a href="#"><img src="{% static 'images/adv01.jpg' %}"></a>
+            <a href="#"><img src="{% static 'images/adv02.jpg' %}"></a>
+        </div>
+    </div>
+    {% for item in goods_list %}
+        <div class="list_model">
+            <div class="list_title clearfix">
+                <h3 class="fl" id="model0{{ forloop.counter }}">{{ item.goods_category.name }}</h3>
+                <a href="{% url 'shop:categorys' item.goods_category.id %}" class="goods_more fr" id="fruit_more">查看更多 ></a>
+            </div>
+                <div class="goods_con clearfix">
+                    <div class="goods_banner fl"><img src="{{ STATIC_URL }}images/banner0{{ forloop.counter }}.jpg"></div>
+                    <ul class="goods_list fl">
+                        {% for item in item.goodsinfos %}
+                         <li>
+                            <h4><a href="{% url 'shop:detail' item.id %}">{{ item.name }}</a></h4>
+                            <a href="{% url 'shop:detail' item.id %}"><img src="{{ MEDIA_URL }}{{ item.images }}"></a>
+                            <div class="prize">¥ {{ item.price }}</div>
+                        </li>
+                        {% endfor %}
+
+                    </ul>
+                </div>
+                </div>
+
+    {% endfor %}
+{% endblock index_content %}
+
+

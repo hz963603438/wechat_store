@@ -1,0 +1,11 @@
+{% load staticfiles %}
+
+<ul>
+    {% for goods in refferral_goods %}
+    <li>
+        <a href="{% url 'shop:detail' goods.id %}"><img src="{{ MEDIA_URL }}{{ goods.images }}"></a>
+        <h4><a href="#">{{ goods.name }}</a></h4>
+        <div class="prize">￥{{ goods.price }}</div>
+    </li>
+    {% endfor %}
+</ul>
